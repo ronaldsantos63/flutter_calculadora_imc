@@ -14,17 +14,27 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   TextEditingController _weightController = TextEditingController();
   TextEditingController _heightController = TextEditingController();
-  String _infoText = "Info";
+  FocusNode _weightFocus = FocusNode();
+  FocusNode _heightFocus = FocusNode();
+
+  String _infoText = "PREENCHA AS INFORMAÇÕES";
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  _fieldFocusChange(
+      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+    currentFocus.unfocus();
+    FocusScope.of(context).requestFocus(nextFocus);
+  }
+
   void _resetFields() {
+    _formKey.currentState.reset();
     _weightController.text = "";
     _heightController.text = "";
-    _formKey.currentState.reset();
     setState(() {
       _infoText = "";
     });
+    _fieldFocusChange(context, _heightFocus, _weightFocus);
   }
 
   void _calculate() {
@@ -80,6 +90,8 @@ class _HomeState extends State<Home> {
                 ),
                 TextFormField(
                   autofocus: true,
+                  textInputAction: TextInputAction.next,
+                  focusNode: _weightFocus,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   style: TextStyle(color: Colors.deepPurple, fontSize: 25.0),
@@ -98,8 +110,13 @@ class _HomeState extends State<Home> {
                       return "Insira seu PESO!";
                     }
                   },
+                  onFieldSubmitted: (term) {
+                    _fieldFocusChange(context, _weightFocus, _heightFocus);
+                  },
                 ),
                 TextFormField(
+                  textInputAction: TextInputAction.done,
+                  focusNode: _heightFocus,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   style: TextStyle(color: Colors.deepPurple, fontSize: 25.0),
@@ -118,6 +135,10 @@ class _HomeState extends State<Home> {
                       return "Insira sua ALTURA!";
                     }
                   },
+                  onFieldSubmitted: (term) {
+                    _heightFocus.unfocus();
+                    _calculate();
+                  },
                 ),
                 Container(
                   padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
@@ -129,7 +150,7 @@ class _HomeState extends State<Home> {
                       style: TextStyle(color: Colors.white, fontSize: 25.0),
                     ),
                     onPressed: () {
-                      if (_formKey.currentState.validate()){
+                      if (_formKey.currentState.validate()) {
                         _calculate();
                       }
                     },
